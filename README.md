@@ -16,3 +16,16 @@
 ### cat bins_80_5_checkm.summary | awk 'BEGIN{OFS=",";}{print $1 ".fa", $2, $3}' > ./bins_80_5_checkm_info
 sed 's/bin.fa,/genome,/g' bins_80_5_checkm_info > bins_80_5_checkm_info.csv
 dRep dereplicate dereplicate_result -pa 0.95 -sa 0.95 -g ./bins_80_5/* -p 32 --genomeInfo bins_80_5_checkm_info.csv
+
+## 6. For gene prediction: prodigal 
+### ls -d all_rename_SGBs/*fa | parallel --plus -j 32 prodigal -i {} -a all_rename_SGBs_faa/{/.}.faa -f gff -o all_rename_SGBs_faa/{/.}.gff -q -d all_rename_SGBs_faa/{/.}.ffn
+
+## 7. For species annotation
+### cat all_rename_SGBs_faa/*faa > all_combine.faa
+diamond blastp --threads 32 --max-target-seqs 10 --db  /nvmessdnode3/opt/database/uniport/uniprot_trembl_sport.dmnd --query all_combine.faa --outfmt 6 qseqid sseqid stitle pident qlen slen length mismatch gapopen qstart qend sstart send evalue bitscore --out all_combine.dia
+mkdir all_rename_SGBs_speci_out
+ls -d all_rename_SGBs_faa/*faa | parallel -j 30 specI.py {.}.ffn {} 2 {/.} all_rename_SGBs_speci_out
+cat all_rename_SGBs_speci_out/S*/*results | cut -f 1,4,5 > all_rename_SGBs_speci_out.summary
+
+## 8. For reads mapping
+### cat sample_names | parallel -j 10 bbmap.sh ref=all_rename_bins.fa in1=./all_sample/{}/{}_paired_1.fastq.gz in2=./all_sample/{}/{}_paired_2.fastq.gz -Xmx50g threads=10 unpigz=T out=bbmap_out/{}.sam minid=0.95 idfilter=0.95
