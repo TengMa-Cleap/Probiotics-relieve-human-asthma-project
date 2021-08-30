@@ -29,3 +29,8 @@ cat all_rename_SGBs_speci_out/S*/*results | cut -f 1,4,5 > all_rename_SGBs_speci
 
 ## 8. For reads mapping
 ### cat sample_names | parallel -j 10 bbmap.sh ref=all_rename_bins.fa in1=./all_sample/{}/{}_paired_1.fastq.gz in2=./all_sample/{}/{}_paired_2.fastq.gz -Xmx50g threads=10 unpigz=T out=bbmap_out/{}.sam minid=0.95 idfilter=0.95
+
+
+## 9. Phage assembly
+### VIBRANT: ls -d *fasta | parallel -j 10 VIBRANT_run.py -i {} -t 20 
+### DeepVirFinder: parallel -j 10 python /userdata/data_jinh/.method/script.links/181120rename_seq_inputname_retain_rawnames.py {}/{/}_Output_contigs_min2000.fasta {}/{/}.rename.fasta {/}
